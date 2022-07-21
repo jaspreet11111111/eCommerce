@@ -58,10 +58,10 @@ const registerUser = asyncHandler( async (req, res) => {
 })
 
 // @desc    GET user Profile
-// @route   POST /api/user/profile
+// @route   POST /api/users/profile
 // @access  protected
 const getUserProfile = asyncHandler( async (req, res) => {
-    const user = await User.findOne(req.user._id)
+    const user = await User.findById(req.user._id)
 
     if(user){
         res.json({
@@ -76,8 +76,38 @@ const getUserProfile = asyncHandler( async (req, res) => {
     }
 })
 
+// @desc    Update user Profile
+// @route   PUT /api/user/profile
+// @access  protected
+const updateUserProfile = asyncHandler( async (req, res) => {
+    const user = await User.findById(req.user._id)
+ 
+    if(user){
+        user.name= req.body.name || user.name
+        user.email= req.body.email || user.email
+        if(req.body.password){
+            user.password= req.body.password || user.password
+        }
+        
+        const updatedUser = await user.save() 
+        
+        res.json({
+            _id: updatedUser._id, 
+            name: updatedUser.name,
+            email: updatedUser.email,
+            isAdmin: updatedUser.isAdmin,
+            token: generateToken(updatedUser._id)
+        })
+
+    } else{
+        res.status(404)
+        throw new Error('User Not Found') 
+    }
+})
+
 export {
     authUser,
     getUserProfile,
     registerUser,
+    updateUserProfile,
 }
